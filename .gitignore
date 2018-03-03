@@ -105,3 +105,8 @@ ENV/
 
 # database
 *.db
+
+# pycharm
+.idea
+serverv1.py
+.DS_Store
