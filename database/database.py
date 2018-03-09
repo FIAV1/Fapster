@@ -2,46 +2,34 @@
 
 import sqlite3
 from sqlite3 import Error
+from typing import Union
 
-def createDatabase(dbFileName):
+DB_FILE = "directory.db"
+
+
+def create_database() -> Union[str, None]:
     """ create a sqlite db file
-    :param dbFileName: database file name with path
-    :return: String or None
+    :return: str or None
     """
     try:
-        dbFile = open(dbFileName, "w+")
-        dbFile.close()
-        return dbFileName
+        db_file = open(DB_FILE, "w+")
+        db_file.close()
+        return DB_FILE
     except IOError as e:
         print(e)
     
     return None
 
-def createConnection(dbFile):
+
+def get_connection() -> Union[sqlite3.Connection, None]:
     """ create a database connection to the SQLite database
         specified by dbFile
-    :param dbFile: database file
     :return: Connection object or None
     """
     try:
-        connection = sqlite3.connect(dbFile)
+        connection = sqlite3.connect(DB_FILE)
         return connection
     except Error as e:
         print(e)
 
     return None
-
-def execQuery(conn, query):
-    """ Execute a query
-    :param conn: Connection object
-    :param query: query to be executed
-    :return: Boolean
-    """
-    try:
-        c = conn.cursor()
-        c.execute(query)
-        return True
-    except Error as e:
-        print(e)
-    
-    return False

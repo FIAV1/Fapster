@@ -3,8 +3,11 @@
 import socket
 import sys
 import os
+import multiprocessing
+from Handler import Handler
 
 PORT = 3000
+BUFF_SIZE = 200
 
 
 def child():
@@ -12,12 +15,15 @@ def child():
 	print(f'Client {client} on port {client_port}. Child PID: {os.getpid()}\n')
 	ss.close()
 	while True:
-		data = sd.recv(1024)
-		print(f'Received: {data}')
-		if not data:
-			sd.close()
+		data = sd.recv(BUFF_SIZE)
+		request = data.decode('UTF-8')
+
+		response = Handler.serve(request)
+		sd.sendall(bytes(response, 'UTF-8'))
+
+		if not request:
 			break
-		sd.send(data)
+
 	os._exit(0)
 
 
@@ -51,9 +57,8 @@ while True:
 	# Put the passive socket on hold for connection requests
 	(sd, clientaddr) = ss.accept()
 
-	pid = os.fork()
-	if pid == 0:  # --------FIGLIO-------
-		child()
-	# ----------------------------------
+	p = multiprocessing.Process(target=child)
+	p.daemon = True
+	p.start()
 
 	sd.close()

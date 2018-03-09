@@ -18,9 +18,9 @@ while True:
 		continue
 
 try:
-	sd.connect((server,3000))
-except OSError:
-	print(f'Errore sulla connect: {OSError.strerror}')
+	sd.connect((server, 3000))
+except OSError as e:
+	print(f'Errore sulla connect: {e}')
 	sys.exit(0)
 
 with sd:
@@ -30,4 +30,5 @@ with sd:
 		data = input('Messaggio: ')
 		sd.sendall(bytes(data, 'UTF-8'))
 		data = sd.recv(1024)
-		print(f'Ricevuto {data}')
+		response = data.decode('UTF-8')
+		print(f'Ricevuto: {response}')
