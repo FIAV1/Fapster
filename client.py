@@ -3,6 +3,8 @@
 import socket
 import sys
 
+import os
+
 server = input('Server: ')
 
 while True:
@@ -31,4 +33,7 @@ with sd:
 		sd.sendall(bytes(data, 'UTF-8'))
 		data = sd.recv(1024)
 		response = data.decode('UTF-8')
-		print(f'Ricevuto: {response}')
+		print(f'Ricevuto: {data}')
+
+		if response == "ALGO":
+			os._exit(0)

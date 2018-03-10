@@ -15,13 +15,11 @@ def child():
 	print(f'Client {client} on port {client_port}. Child PID: {os.getpid()}\n')
 	ss.close()
 	while True:
-		data = sd.recv(BUFF_SIZE)
-		request = data.decode('UTF-8')
-
+		request = sd.recv(BUFF_SIZE)
 		response = Handler.serve(request)
-		sd.sendall(bytes(response, 'UTF-8'))
+		sd.sendall((bytes(response, 'UTF-8')))
 
-		if not request:
+		if response[0:4] == "ALGO":
 			break
 
 	os._exit(0)
