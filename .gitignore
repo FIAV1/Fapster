@@ -99,3 +99,15 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# vscode
+.vscode
+
+# database
+*.db
+
+# pycharm
+.idea
+serverV2.py
+serverV3.py
+.DS_Store
