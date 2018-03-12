@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-import database
+from .database import Database
+from sqlite3 import Error
 
 
 def main():
-	db_file_name = database.create_database()
+	db = Database().create_database()
 
-	if db_file_name is not None:
-
-		sql_create_directory_table = """ CREATE TABLE IF NOT EXISTS files (
+	if db is not None:
+		sql_create_files_table = """ CREATE TABLE IF NOT EXISTS files (
 											id integer PRIMARY KEY,
 											file_md5 char(32) NOT NULL,
 											file_name char(100) NOT NULL,
@@ -25,31 +25,30 @@ def main():
 										"""
 
 		sql_create_downloads_table = """ CREATE TABLE IF NOT EXISTS downloads (
-										id integer PRIMARY KEY,
-										file_id integer
+										file_id integer PRIMARY KEY,
 										number char(5) NOT NULL,
-										FOREIGN KEY (file_id) REFERENCES directory (file_id) ON DELETE CASCADE
+										FOREIGN KEY (file_id) REFERENCES files (id) ON DELETE CASCADE
 										);
 										"""
 
 		try:
 			# create a database connection
-			conn = database.get_connection()
-		except database.Error as e:
+			conn = Database().get_connection()
+		except Error as e:
 			print(e)
 			exit(0)
 
 		try:
 			c = conn.cursor()
-			# create directory table
-			c.execute(sql_create_directory_table)
+			# create files table
+			c.execute(sql_create_files_table)
 			# create peers table
 			c.execute(sql_create_peers_table)
 			# create downloads table
 			c.execute(sql_create_downloads_table)
 			# commits the statements
 			conn.commit()
-		except database.Error as e:
+		except Error as e:
 			conn.rollback()
 			print(e)
 			exit(0)

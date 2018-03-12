@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 
-from model.Peer import Peer
+
+
 
 def main():
-    peer = Peer(1,1,1)
-    peer.insert()
+   
+    print(f'inserito utente {peer.session_id}')
+
+    peer.delete()
+    print(f'rimosso utente {peer.session_id}')
 
 if __name__ == '__main__':
     main()

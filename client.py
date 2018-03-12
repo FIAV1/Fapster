@@ -35,5 +35,6 @@ with sd:
 		response = data.decode('UTF-8')
 		print(f'Ricevuto: {data}')
 
-		if response == "ALGO":
+		if response[0:4] == "ALGO":
+			print(f'Connection closed.\n{response[5:]} files deleted.\n')
 			os._exit(0)

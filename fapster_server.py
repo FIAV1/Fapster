@@ -20,6 +20,7 @@ def child():
 		sd.sendall((bytes(response, 'UTF-8')))
 
 		if response[0:4] == "ALGO":
+			print(f'Client {client} on port {client_port} with PID: {os.getpid()} closed the connection.\n{response[5:]} files deleted.\n')
 			break
 
 	os._exit(0)

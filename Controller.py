@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-# import database.database as database
+from model.Peer import Peer
+import uuid
 
 
 class Controller:
@@ -17,9 +18,10 @@ class Controller:
 		ip = request[5:60].decode('UTF-8')
 		port = request[61:66].decode('UTF-8')
 
-		# conn = database.get_connection()
+		peer = Peer(str(uuid.uuid4().hex[:16].upper()), ip, port)
+		peer.insert()
 
-		return "This is the response for LOGI"
+		return "ALGI."+peer.session_id
 
 	@staticmethod
 	def logout(request: bytes) -> str:
@@ -32,9 +34,11 @@ class Controller:
 
 		session_id = request[5:21].decode('UTF-8')
 
-		# conn = database.get_connection()
+		peer = Peer.get_first(session_id)
 
-		return "ALGO"
+		deleted = peer.delete()
+
+		return "ALGO."+str(deleted)
 
 	@staticmethod
 	def add_file(request: bytes) -> str:
