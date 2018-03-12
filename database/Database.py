@@ -11,7 +11,8 @@ class Database:
         self.DB_FILE = "directory.db"
 
     def create_database(self):
-        """ Create a sqlite db file\n
+        """ Create a sqlite db file
+
         Returns:
             str - a string containing the db name, or None
         """
@@ -25,8 +26,8 @@ class Database:
         return None
 
     def get_connection(self):
-        """ create a database connection to the SQLite database
-            specified by dbFile\n
+        """ create a database connection to the SQLite database specified by DB_FILE
+
         Returns:
             Connection - Connection object or None
         """

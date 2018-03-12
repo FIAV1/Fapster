@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from .database import Database
+from Database import Database
 from sqlite3 import Error
 
 

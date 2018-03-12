@@ -8,8 +8,12 @@ class Handler:
 	@staticmethod
 	def serve(request: bytes) -> str:
 		""" Handle the peer request and call the right Controller method
-		:param: request: the string containing the request
-		:return: str: the string containinf the response
+
+		Parameters:
+			request - the list containing the request parameters
+
+		Returns:
+			str - the response
 		"""
 		command = request[0:4].decode('UTF-8')
 

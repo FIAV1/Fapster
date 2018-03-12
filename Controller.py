@@ -9,8 +9,12 @@ class Controller:
 	@staticmethod
 	def login(request: bytes) -> str:
 		""" Login the peer to the directory
-		:param: request: the list containing the request parameters
-		:return: str: the response
+
+		Parameters:
+			request - the list containing the request parameters
+
+		Returns:
+			str - the response
 		"""
 		if request.__len__() != 66:
 			return "Invalid request. Usage is: LOGI.<your_ip>.<your_port>"
@@ -26,8 +30,12 @@ class Controller:
 	@staticmethod
 	def logout(request: bytes) -> str:
 		""" Logout the peer from the directory
-		:param: request: the list containing the request parameters
-		:return: str: the response
+
+		Parameters:
+			request - the list containing the request parameters
+
+		Returns:
+			str - the response
 		"""
 		if request.__len__() != 21:
 			return "Invalid request. Usage is: LOGO.<your_session_id>"
@@ -43,8 +51,12 @@ class Controller:
 	@staticmethod
 	def add_file(request: bytes) -> str:
 		""" Add a file to the directory
-		:param: request: the list containing the request parameters
-		:return: str: the response
+
+		Parameters:
+			request - the list containing the request parameters
+
+		Returns:
+			str - the response
 		"""
 		if request.__len__() != 155:
 			return "Invalid request. Usage is: ADDF.<your_session_id>.<file_md5>.<filename>"
@@ -60,8 +72,12 @@ class Controller:
 	@staticmethod
 	def delete_file(request: bytes) -> str:
 		""" Delete a file from the directory
-		:param: request: the list containing the request parameters
-		:return: str: the response
+		
+		Parameters:
+			request - the list containing the request parameters
+
+		Returns:
+			str - the response
 		"""
 		if request.__len__() != 54:
 			return "Invalid request. Usage is: DELF.<your_session_id>.<file_md5>"
@@ -76,8 +92,12 @@ class Controller:
 	@staticmethod
 	def find_file(request: bytes) -> str:
 		""" Find a file in the directory
-		:param: request: the list containing the request parameters
-		:return: str: the response
+		
+		Parameters:
+			request - the list containing the request parameters
+
+		Returns:
+			str - the response
 		"""
 		if request.__len__() != 42:
 			return "Invalid command. Usage is: FIND.<your_session_id>.<query_string>"
@@ -92,8 +112,13 @@ class Controller:
 	@staticmethod
 	def register_download(request: bytes) -> str:
 		""" Register a file download
-		:param: request: the list containing the request parameters
-		:return: str: the response
+
+		
+		Parameters:
+			request - the list containing the request parameters
+
+		Returns:
+			str - the response
 		"""
 		if request.__len__() != 54:
 			return "Invalid request. Usage is: DREG.<your_session_id>.<file_md5>"

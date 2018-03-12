@@ -12,9 +12,11 @@ class Peer:
         self.port = port
 
     def get_first(session_id):
-        """ Retrive first peer from database\n
+        """ Retrive first peer from database
+
         Parameters:
             session_id - session id for a peer
+
         Returns:
             peer - first matching result for the research
         """
@@ -39,9 +41,11 @@ class Peer:
             return None
 
     def insert(self):
-        """ Insert a peer into db\n
+        """ Insert a peer into db
+
         Parameters:
             self - model's parameters
+
         Returns:
             bool - true or false either if it succeed or it fails
         """
@@ -67,9 +71,11 @@ class Peer:
             return False
 
     def delete(self):
-        """ Delete a peer from db\n
+        """ Delete a peer from db
+
         Parameters:
             self - model's parameters
+
         Returns:
             int - number of file deleted, owned by the peer
         """
