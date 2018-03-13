@@ -78,8 +78,13 @@ def create_database():
 
 
 def refresh_databse():
+	""" Refresh the tables of the database
+	
+	Returns:
+		bool - True or False either if succeeds or fails
+	"""
 
-	statements = 'DELETE FROM peers; DELETE FROM files; DELETE FROM files_peers; PRAGMA foreign_keys = ON;'
+	statements = 'PRAGMA foreign_keys = ON; DELETE FROM peers; DELETE FROM files; DELETE FROM files_peers;'
 
 	try:
 		# create a database connection
@@ -87,6 +92,7 @@ def refresh_databse():
 	except Error as e:
 		print(e)
 		exit(0)
+		return False
 
 	try:
 		c = conn.cursor()
@@ -96,10 +102,14 @@ def refresh_databse():
 		conn.commit()
 		# close the database
 		conn.close()
+		
+		return True
 	except Error as e:
 		conn.rollback()
 		print(e)
 		exit(0)
+		
+		return False
 
 
 def get_connection():
