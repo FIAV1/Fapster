@@ -28,6 +28,7 @@ class Peer:
         Returns:
             int - number of file deleted, owned by the peer
         """
-        deleted = conn.execute('DELETE FROM peers WHERE session_id = ?', (self.session_id,)).rowcount
-
+        deleted = conn.execute('SELECT * FROM peers NATURAL JOIN files_peers WHERE session_id=?', (self.session_id,)).rowcount
+        conn.execute('DELETE FROM peers WHERE session_id = ?', (self.session_id,))
+        
         return deleted

@@ -36,5 +36,5 @@ with sd:
 		print(f'Ricevuto: {data}')
 
 		if response[0:4] == "ALGO":
-			print(f'Connection closed.\n{response[5:]} files deleted.\n')
+			print(f'Connection closed.\n{response[4:]} files deleted.\n')
 			exit(0)

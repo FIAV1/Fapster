@@ -37,12 +37,15 @@ class File:
 		conn.execute(query, {'md5': self.file_md5, 'name': self.file_name, 'count': self.download_count})
 
 	def delete(self, conn: database.sqlite3.Connection) -> int:
-		""" Delete a peer from db
+		""" Remove a file from the db
 
-		Parameters:
-			conn - the db connection
+		Params:
+			conn - Connection object
 		Returns:
-			int - number of file deleted, owned by the peer
+			int - number of remaining copies of the same file
 		"""
-		conn.execute('DELETE FROM files WHERE file_md5 = ?', (self.file_md5,))
+		conn.execute('DELETE FROM files WHERE file_id=?', (file_id,))
 
+		copy = conn.execute('SELECT * FROM files WHERE file_md5=?' (file_md5,))
+
+		return copy
