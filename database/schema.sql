@@ -9,7 +9,7 @@ CREATE TABLE peers (
 
 DROP TABLE IF EXISTS files;
 CREATE TABLE files (
-    id integer PRIMARY KEY,
+    file_id integer PRIMARY KEY,
     file_md5 char(32) NOT NULL,
     file_name char(100) NOT NULL,
     download_count integer DEFAULT 0 NOT NULL
@@ -17,7 +17,7 @@ CREATE TABLE files (
 
 DROP TABLE IF EXISTS files_peers;
 CREATE TABLE files_peers (
-    id integer NOT NULL,
+    file_id integer NOT NULL,
     session_id char(16) NOT NULL,
     PRIMARY KEY (file_id, peer_session_id),
     FOREIGN KEY (file_id) REFERENCES files (id) ON DELETE CASCADE,
