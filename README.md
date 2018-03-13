@@ -41,7 +41,7 @@ Once a client begins the communication, the server will keep the connection open
  
 ```shell
 # Login the peer into the directory
-LOGI[4B].IP_SERVER[55B].PORT_SERVER[5B]
+LOGI[4B].IP_Peer[55B].Port_Peer[5B]
 # Server response will be
 ALGI[4B].SessionID[16B]
 

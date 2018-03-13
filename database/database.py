@@ -4,121 +4,97 @@ import sqlite3
 from sqlite3 import Error
 import os.path
 
-DB_FILE = "directory.db"
 
-def exist():
-	if os.path.exists(DB_FILE):
+def exist(db_filename: str) -> bool:
+	""" Check if the given db exist
+
+	Parameters:
+		db_filename: the db filename
+	Returns:
+		bool - True or False either if exists or not
+	"""
+	if os.path.exists(db_filename):
 		return True
 	return False
 
-def create_database():
-	""" Create a sqlite db file
 
-	Returns:
-		str - a string containing the db name, or None
+def create_database(db_filename: str) -> None:
+	""" Create a sqlite db file with the structure defined in the 'schema.sql' file
+
+	Parameters:
+		db_filename: the db filename
 	"""
 	try:
-		db_file = open(DB_FILE, "w+")
-
-		if db_file is not None:
-			sql_create_peers_table = """ CREATE TABLE IF NOT EXISTS peers (									
-											session_id char(16) PRIMARY KEY,
-											ip char(55) NOT NULL,
-											port char(5) NOT NULL
-											);
-											"""
-
-			sql_create_files_table = """ CREATE TABLE IF NOT EXISTS files (
-												id integer PRIMARY KEY,										
-												file_md5 char(32) NOT NULL,
-												file_name char(100) NOT NULL,
-												download_count integer DEFAULT 0										
-												);
-												"""
-
-			sql_create_files_peers_table = """ CREATE TABLE IF NOT EXISTS files_peers (
-												file_id integer NOT NULL,
-												peer_session_id char(16) NOT NULL,	
-												PRIMARY KEY (file_id, peer_session_id),
-												FOREIGN KEY (file_id) REFERENCES files (id) ON DELETE CASCADE,
-												FOREIGN KEY (peer_session_id) REFERENCES peers (session_id) ON DELETE CASCADE																
-												);
-												"""
-
-			try:
-				# create a database connection
-				conn = get_connection()
-			except Error as e:
-				print(e)
-				exit(0)
-
-			try:
-				c = conn.cursor()
-				# create files table
-				c.execute(sql_create_files_table)
-				# create peers table
-				c.execute(sql_create_peers_table)
-				# create files_peers table
-				c.execute(sql_create_files_peers_table)
-				# enable the foreign keys
-				c.execute('PRAGMA foreign_keys = ON;')
-				# commits the statements
-				conn.commit()
-				# close the database
-				conn.close()
-			except Error as e:
-				conn.rollback()
-				print(e)
-				exit(0)
-
-		else:
-			print("Error: cannot create the database file.")
+		db_file = open(db_filename, "w+")
+		sqlscript = open('database/schema.sql', 'r')
 	except IOError as e:
 		print(e)
+		exit(0)
+
+	if db_file is not None and sqlscript is not None:
+
+		# create a database connection
+		conn = get_connection(db_filename)
+
+		try:
+			# create files table
+			conn.executescript(sqlscript.read())
+			# commits the statements
+			conn.commit()
+			# close the database
+			conn.close()
+		except Error as e:
+			conn.rollback()
+			conn.close()
+			print(e)
+			exit(0)
+
+	else:
+		print("Error: cannot create the database file.")
 
 
-def refresh_databse():
+def reset_database(db_filename: str) -> bool:
 	""" Refresh the tables of the database
-	
+
+	Parameters:
+		db_filename: the db filename
 	Returns:
 		bool - True or False either if succeeds or fails
 	"""
-
-	statements = 'PRAGMA foreign_keys = ON; DELETE FROM peers; DELETE FROM files; DELETE FROM files_peers;'
-
 	try:
-		# create a database connection
-		conn = get_connection()
-	except Error as e:
+		sqlscript = open('database/reset.sql', 'r')
+	except IOError as e:
 		print(e)
 		exit(0)
-		return False
+	# create a database connection
+	conn = get_connection(db_filename)
 
 	try:
-		c = conn.cursor()
 		# delete all tables content
-		c.executescript(statements)
+		conn.executescript(sqlscript.read())
 		# commits the statement
 		conn.commit()
 		# close the database
 		conn.close()
-		
 		return True
 	except Error as e:
 		conn.rollback()
+		conn.close()
 		print(e)
 		exit(0)
-		
 		return False
 
 
-def get_connection():
-	""" create a database connection to the SQLite database specified by DB_FILE
+def get_connection(db_filename: str) -> sqlite3.Connection:
+	""" create a database connection to the given SQLite database
 
+	Parameters:
+		db_filename: the db filename
 	Returns:
 		Connection - Connection object or None
 	"""
 	try:
-		return sqlite3.connect(DB_FILE)
+		return sqlite3.connect(db_filename)
 	except Error as e:
 		print(e)
+		exit(0)
