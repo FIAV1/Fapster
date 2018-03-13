@@ -18,7 +18,7 @@ class Peer:
         Returns:
             bool - true or false either if it succeed or it fails
         """
-        conn.execute('INSERT INTO peers VALUES (?,?,?)', (self.session_id, self.ip, self.port,))
+        conn.execute('INSERT INTO peers VALUES (?,?,?)', (self.session_id, self.ip, self.port))
 
     def delete(self, conn: database.sqlite3.Connection) -> int:
         """ Delete a peer from db

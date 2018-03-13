@@ -14,14 +14,13 @@ def find(conn: database.sqlite3.Connection, session_id: str) -> 'Peer':
 	Returns:
 		peer - first matching result for the research
 	"""
-	try:
-		c = conn.cursor()
-		c.execute('SELECT * FROM peers WHERE session_id = ?', (session_id,))
-		(session_id, ip, port) = c.fetchone()
-		peer = Peer(session_id, ip, port)
+	c = conn.cursor()
+	c.execute('SELECT * FROM peers WHERE session_id = ?', (session_id,))
+	row = c.fetchone()
 
-	except database.Error as e:
-		print(f'Errore: {e}')
+	if row is None:
 		return None
+
+	peer = Peer(session_id, row['ip'], row['port'])
 
 	return peer
