@@ -2,7 +2,9 @@
 
 from database import database
 from model.Peer import Peer
+from model.File import File
 from model import peer_repository
+from model import file_repository
 import uuid
 
 
@@ -20,9 +22,10 @@ def serve(request: bytes) -> str:
 			return "Invalid request. Usage is: LOGI.<your_ip>.<your_port>"
 
 		ip = request[4:59].decode('UTF-8')
-		port = request[60:64].decode('UTF-8')
+		port = request[59:64].decode('UTF-8')
 		peer = Peer(str(uuid.uuid4().hex[:16].upper()), ip, port)
-		conn = database.get_connection()
+
+		conn = database.get_connection('directory.db')
 
 		try:
 			peer.insert(conn)
@@ -38,17 +41,46 @@ def serve(request: bytes) -> str:
 		return "ALGI" + peer.session_id
 
 	elif command == "ADDF":
-		if request.__len__() != 155:
+		if request.__len__() != 152:
 			return "Invalid request. Usage is: ADDF.<your_session_id>.<file_md5>.<filename>"
 
-		session_id = request[5:21].decode('UTF-8')
-		md5 = request[22:54].decode('UTF-8')
-		name = request[55:155].decode('UTF-8')
+		session_id = request[4:20].decode('UTF-8')
+		md5 = request[20:52].decode('UTF-8')
+		name = request[52:152].decode('UTF-8')
 
-		conn = database.get_connection()
-		conn.close()
+		conn = database.get_connection('directory.db')
+		conn.row_factory = database.sqlite3.Row
 
-		return "This is the response for ADDF"
+		try:
+			peer = peer_repository.find(conn, session_id)
+
+			if peer is None:
+				conn.close()
+				return "Unauthorized: your SessionID is invalid"
+
+			file = file_repository.find(conn, md5)
+
+			if file is None:
+				file = File(md5, name, 0)
+				file.insert(conn)
+				file_repository.add_owner(conn, md5, session_id)
+			else:
+				file.file_name = name
+				file.update(conn)
+				if not file_repository.peer_has_file(conn, session_id, md5):
+					file_repository.add_owner(conn, md5, session_id)
+
+			conn.commit()
+
+			num_copies = file_repository.get_copies(conn, md5)
+			conn.close()
+		except database.Error as e:
+			conn.rollback()
+			conn.close()
+			print(f'Error: {e}')
+			return "The server has encountered an error while trying to serve the request."
+
+		return "AADD" + str(num_copies)
 
 	elif command == "DELF":
 		if request.__len__() != 54:
@@ -57,7 +89,7 @@ def serve(request: bytes) -> str:
 		session_id = request[5:21].decode('UTF-8')
 		md5 = request[22:54].decode('UTF-8')
 
-		conn = database.get_connection()
+		conn = database.get_connection('directory.db')
 		conn.close()
 
 		return "This is the response for DELF"
@@ -69,7 +101,7 @@ def serve(request: bytes) -> str:
 		session_id = request[5:21].decode('UTF-8')
 		query = request[22:42].decode('UTF-8')
 
-		conn = database.get_connection()
+		conn = database.get_connection('directory.db')
 		conn.close()
 
 		return "This is the response for FIND"
@@ -81,7 +113,7 @@ def serve(request: bytes) -> str:
 		session_id = request[5:21].decode('UTF-8')
 		md5 = request[22:54].decode('UTF-8')
 
-		conn = database.get_connection()
+		conn = database.get_connection('directory.db')
 		conn.close()
 
 		return "This is the response for DREG"
@@ -91,7 +123,8 @@ def serve(request: bytes) -> str:
 			return "Invalid request. Usage is: LOGO.<your_session_id>"
 
 		session_id = request[4:20].decode('UTF-8')
-		conn = database.get_connection()
+		conn = database.get_connection('directory.db')
+		conn.row_factory = database.sqlite3.Row
 
 		try:
 			peer = peer_repository.find(conn, session_id)

@@ -111,3 +111,5 @@ ENV/
 serverV2.py
 serverV3.py
 .DS_Store
+
+requests.txt
