@@ -64,6 +64,8 @@ def create_database():
 				c.execute('PRAGMA foreign_keys = ON;')
 				# commits the statements
 				conn.commit()
+				# close the database
+				conn.close()
 			except Error as e:
 				conn.rollback()
 				print(e)
@@ -92,6 +94,8 @@ def refresh_databse():
 		c.executescript(statements)
 		# commits the statement
 		conn.commit()
+		# close the database
+		conn.close()
 	except Error as e:
 		conn.rollback()
 		print(e)
