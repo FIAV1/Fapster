@@ -5,7 +5,7 @@ from .Peer import Peer
 from .File import File
 
 
-def find_peer(conn: database.sqlite3.Connection, session_id: str) -> 'Peer':
+def find(conn: database.sqlite3.Connection, session_id: str) -> 'Peer':
 	""" Retrive first peer from database
 
 	Parameters:
@@ -27,58 +27,44 @@ def find_peer(conn: database.sqlite3.Connection, session_id: str) -> 'Peer':
 	return peer
 
 
-def find_file(conn: database.sqlite3.Connection, session_id: str, file_md5: str) -> 'File':
-	""" Retrive first file from database
+def get_deleted(conn: database.sqlite3.Connection, session_id: str) -> int:
+	""" Count all file that will be deleted by deleting the user
 
 	Parameters:
 		conn - the db connection
 		session_id - session id for a peer
-		file_md5 - md5 hash for a file
 
 	Returns:
-		file - first matching result for the research
+		int - amount of deleted files
 	"""
-	try:
-		c = conn.cursor()
-		c.execute(""" SELECT file_id FROM files
-						NATURAL JOIN files_peers
-						NATURAL JOIN peers
-						WHERE session_id=?
-						AND file_md5=? """, (session_id, file_md5,))
-		(file_id, file_md5, file_name, download_count) = c.fetchone()
-		file_data = File(file_id, file_md5, file_name, download_count)
+	c = conn.cursor()
+	c.execute('SELECT COUNT(session_id) AS num FROM files_peers WHERE session_id = ?', (session_id,))
+	row = c.fetchone()
 
-	except database.Error as e:
-		print(f'Errore: {e}')
+	if row is None:
 		return None
 
-	return file_data
+	num = row['num']
+
+	return num
 
 
-def download_register(conn: database.sqlite3.Connection, session_id: str, file_md5: str) -> int:
-	""" Register a new download for a file
+def file_unlink(conn: database.sqlite3.Connection, session_id: str, file_md5: str) -> bool:
+	""" Unlink the Peer from the file
 
 	Parameters:
 		conn - the db connection
 		session_id - session id for a peer
-		file_md5 - hash of the file
+		file_md5 - md5 hash of a file
 
 	Returns:
-		int - number of downloads for that file
+		bool - true or false either if it succeds or fails
 	"""
-	try:
-		c = conn.cursor()
-		c.execute(""" SELECT * FROM peers
-					NATURAL JOIN files_peers
-					NATURAL JOIN files
-					WHERE session_id = ? AND file_md5 = ? """, (session_id, file_md5))
-		(file_id, file_md5, file_name, download_count) = c.fetchone()
-		download_count += 1
-		file = File(file_id, file_md5, file_name, download_count)
-		file.update()
 
-	except database.Error as e:
-		print(f'Errore: {e}')
-		return None
+	c = conn.cursor()
+	row = c.execute('DELETE FROM files_peers WHERE file_md5=? AND session_id=?', (file_md5, session_id,)).rowcount
 
-	return download_count
+	if row <= 0:
+		return False
+
+	return True

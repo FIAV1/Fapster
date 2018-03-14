@@ -15,7 +15,6 @@ class File:
 
 		Parameters:
 			conn - the db connection
-			peer_session_id - the session id of the peer who want to add the file
 		Returns:
 			None
 		"""
@@ -26,7 +25,6 @@ class File:
 
 		Parameters:
 			conn - the db connection
-			peer_session_id - the session id of the peer who want to add the file
 		Returns:
 			None
 		"""
@@ -36,16 +34,13 @@ class File:
 
 		conn.execute(query, {'md5': self.file_md5, 'name': self.file_name, 'count': self.download_count})
 
-	def delete(self, conn: database.sqlite3.Connection) -> int:
+	def delete(self, conn: database.sqlite3.Connection) -> None:
 		""" Remove a file from the db
 
 		Params:
-			conn - Connection object
+			conn - the db connection
 		Returns:
-			int - number of remaining copies of the same file
+			None
 		"""
-		conn.execute('DELETE FROM files WHERE file_id=?', (file_id,))
 
-		copy = conn.execute('SELECT * FROM files WHERE file_md5=?' (file_md5,))
-
-		return copy
+		conn.execute('DELETE FROM files WHERE file_md5=?', (self.file_md5,))

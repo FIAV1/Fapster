@@ -50,7 +50,7 @@ def peer_has_file(conn: database.sqlite3.Connection, session_id: str, file_md5: 
 		file - the file found
 	"""
 	c = conn.cursor()
-	c.execute('SELECT * FROM files_peers WHERE file_md5=:md5 AND session_id=:id', {'md5': file_md5, 'id':session_id})
+	c.execute('SELECT * FROM files_peers WHERE file_md5=:md5 AND session_id=:id', {'md5': file_md5, 'id': session_id})
 	row = c.fetchone()
 
 	if row is None:
