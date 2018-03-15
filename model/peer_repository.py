@@ -27,28 +27,6 @@ def find(conn: database.sqlite3.Connection, session_id: str) -> 'Peer':
 	return peer
 
 
-def get_deleted(conn: database.sqlite3.Connection, session_id: str) -> int:
-	""" Count all file that will be deleted by deleting the user
-
-	Parameters:
-		conn - the db connection
-		session_id - session id for a peer
-
-	Returns:
-		int - amount of deleted files
-	"""
-	c = conn.cursor()
-	c.execute('SELECT COUNT(session_id) AS num FROM files_peers WHERE session_id = ?', (session_id,))
-	row = c.fetchone()
-
-	if row is None:
-		return None
-
-	num = row['num']
-
-	return num
-
-
 def file_unlink(conn: database.sqlite3.Connection, session_id: str, file_md5: str) -> bool:
 	""" Unlink the Peer from the file
 

@@ -72,9 +72,9 @@ def serve(request: bytes) -> str:
 				if not file_repository.peer_has_file(conn, session_id, md5):
 					file_repository.add_owner(conn, md5, session_id)
 
-			conn.commit()
-
 			num_copies = file_repository.get_copies(conn, md5)
+
+			conn.commit()
 			conn.close()
 		except database.Error as e:
 			conn.rollback()
@@ -97,11 +97,11 @@ def serve(request: bytes) -> str:
 		try:
 			if not file_repository.peer_has_file(conn, session_id, md5):
 				conn.close()
-				return "Peer doesn't own the file"
+				return "File not found"
 
 			if not peer_repository.file_unlink(conn, session_id, md5):
 				conn.close()
-				return "Cannot delete the file"
+				return "The server has encountered an error while trying to serve the request."
 
 			copy = file_repository.get_copies(conn, md5)
 
@@ -145,13 +145,9 @@ def serve(request: bytes) -> str:
 		try:
 			if not file_repository.peer_has_file(conn, session_id, md5):
 				conn.close()
-				return "Peer doesn't own the file"
+				return "File not found"
 
 			file = file_repository.find(conn, md5)
-
-			if file is None:
-				conn.close()
-				return "File not found"
 
 			file.download_count += 1
 			file.update(conn)
@@ -182,7 +178,7 @@ def serve(request: bytes) -> str:
 				conn.close()
 				return "Peer not found"
 
-			deleted = peer_repository.get_deleted(conn, session_id)
+			deleted = file_repository.delete_peer_files(conn, session_id)
 
 			peer.delete(conn)
 

@@ -37,7 +37,7 @@ class File:
 	def delete(self, conn: database.sqlite3.Connection) -> None:
 		""" Remove a file from the db
 
-		Params:
+		Parameters:
 			conn - the db connection
 		Returns:
 			None
