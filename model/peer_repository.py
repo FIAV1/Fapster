@@ -2,6 +2,7 @@
 
 from database import database
 from .Peer import Peer
+from .File import File
 
 
 def find(conn: database.sqlite3.Connection, session_id: str) -> 'Peer':
@@ -24,3 +25,24 @@ def find(conn: database.sqlite3.Connection, session_id: str) -> 'Peer':
 	peer = Peer(session_id, row['ip'], row['port'])
 
 	return peer
+
+
+def file_unlink(conn: database.sqlite3.Connection, session_id: str, file_md5: str) -> bool:
+	""" Unlink the Peer from the file
+
+	Parameters:
+		conn - the db connection
+		session_id - session id for a peer
+		file_md5 - md5 hash of a file
+
+	Returns:
+		bool - true or false either if it succeds or fails
+	"""
+
+	c = conn.cursor()
+	row = c.execute('DELETE FROM files_peers WHERE file_md5=? AND session_id=?', (file_md5, session_id,)).rowcount
+
+	if row <= 0:
+		return False
+
+	return True
