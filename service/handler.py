@@ -95,16 +95,32 @@ def serve(request: bytes) -> str:
 		return "This is the response for DELF"
 
 	elif command == "FIND":
-		if request.__len__() != 42:
+		if request.__len__() != 40:
 			return "Invalid command. Usage is: FIND.<your_session_id>.<query_string>"
 
-		session_id = request[5:21].decode('UTF-8')
-		query = request[22:42].decode('UTF-8')
+		session_id = request[4:20].decode('UTF-8')
+		query = request[20:40].decode('UTF-8')
 
 		conn = database.get_connection('directory.db')
-		conn.close()
+		conn.row_factory = database.sqlite3.Row
 
-		return "This is the response for FIND"
+		try:
+			peer = peer_repository.find(conn, session_id)
+
+			if peer is None:
+				conn.close()
+				return "Unauthorized: your SessionID is invalid"
+
+			resultset = file_repository.search(conn, query)
+
+			conn.close()
+		except database.Error as e:
+			conn.rollback()
+			conn.close()
+			print(f'Error: {e}')
+			return "The server has encountered an error while trying to serve the request."
+
+		return "AFIN" + resultset
 
 	elif command == "DREG":
 		if request.__len__() != 54:

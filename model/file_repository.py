@@ -18,7 +18,7 @@ def add_owner(conn: database.sqlite3.Connection, file_md5: str, peer_session_id:
 
 
 def find(conn: database.sqlite3.Connection, file_md5: str) -> 'File':
-	""" Retrive the file with the given md5 from database
+	""" Retrieve the file with the given md5 from database
 
 	Parameters:
 		conn - the db connection
@@ -40,7 +40,7 @@ def find(conn: database.sqlite3.Connection, file_md5: str) -> 'File':
 
 
 def peer_has_file(conn: database.sqlite3.Connection, session_id: str, file_md5: str) -> bool:
-	""" Retrive the file with the given md5 from database
+	""" Retrieve the file with the given md5 from database
 
 	Parameters:
 		conn - the db connection
@@ -60,7 +60,7 @@ def peer_has_file(conn: database.sqlite3.Connection, session_id: str, file_md5: 
 
 
 def get_copies(conn: database.sqlite3.Connection, file_md5: str) -> str:
-	""" Retrive the copies amount of the given file
+	""" Retrieve the copies amount of the given file
 
 	Parameters:
 		conn - the db connection
@@ -79,3 +79,47 @@ def get_copies(conn: database.sqlite3.Connection, file_md5: str) -> str:
 	num = row['num']
 
 	return num
+
+
+def search(conn: database.sqlite3.Connection, query: str) -> str:
+	""" Search the files with given string on the name
+
+	Parameters:
+		conn - the db connection
+		query - keyword for the search
+
+	Returns:
+		file list - the list of corresponding files
+	"""
+
+	c = conn.cursor()
+	c.execute('SELECT COUNT(file_md5) AS num FROM files WHERE file_name LIKE "%?%"', (query,))
+	row = c.fetchone()
+
+	if row is None:
+		return None
+
+	result = row['num']
+
+	c.execute('SELECT file_md5, file_name FROM files WHERE file_name LIKE "%?%"', (query,))
+	files = c.fetchall()
+
+	if files is None:
+		return None
+
+	for file in files:
+		file_md5 = file['file_md5']
+		file_name = file['file_name']
+		result = result + file_md5 + file_name + get_copies(conn, file_md5)
+		c.execute('SELECT peers.ip, peers.port FROM files_peers JOIN peers ON files_peers.session_id = peers.session_id WHERE files_peers.file_md5 = ?', (file_md5,))
+		peers = c.fetchall()
+
+		if peers is None:
+			return None
+		for peer in peers:
+			peer_ip = peer['peers.ip']
+			peer_port = peer['peers.port']
+			result = result + peer_ip + peer_port
+
+	return result
+
