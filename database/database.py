@@ -85,6 +85,34 @@ def reset_database(db_filename: str) -> bool:
 		return False
 
 
+def fill_seeds(db_filename: str) -> bool:
+
+	try:
+		reset_script = open('database/reset.sql', 'r')
+		seeds_script = open('database/seeds.sql', 'r')
+	except IOError as e:
+		print(e)
+		exit(0)
+	# create a database connection
+	conn = get_connection(db_filename)
+
+	try:
+		conn.executescript(reset_script.read())
+		conn.executescript(seeds_script.read())
+		print('Eseguo')
+		# commits the statement
+		conn.commit()
+		# close the database
+		conn.close()
+		return True
+	except Error as e:
+		conn.rollback()
+		conn.close()
+		print(e)
+		exit(0)
+		return False
+
+
 def get_connection(db_filename: str) -> sqlite3.Connection:
 	""" create a database connection to the given SQLite database
 
