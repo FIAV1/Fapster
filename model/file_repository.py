@@ -50,7 +50,7 @@ def peer_has_file(conn: database.sqlite3.Connection, session_id: str, file_md5: 
 		file - the file found
 	"""
 	c = conn.cursor()
-	c.execute('SELECT * FROM files_peers WHERE file_md5=:md5 AND session_id=:id', {'md5': file_md5, 'id':session_id})
+	c.execute('SELECT * FROM files_peers WHERE file_md5=:md5 AND session_id=:id', {'md5': file_md5, 'id': session_id})
 	row = c.fetchone()
 
 	if row is None:
@@ -79,3 +79,30 @@ def get_copies(conn: database.sqlite3.Connection, file_md5: str) -> str:
 	num = row['num']
 
 	return num
+
+
+def delete_peer_files(conn: database.sqlite3.Connection, session_id: str) -> int:
+	""" Count all file that will be deleted by deleting the user
+
+	Parameters:
+		conn - the db connection
+		session_id - session id for a peer
+
+	Returns:
+		int - amount of deleted files
+	"""
+	c = conn.cursor()
+	c.execute('PRAGMA foreign_keys=ON')
+	c.execute(""" DELETE FROM files
+					WHERE file_md5 IN
+						(SELECT f.file_md5
+							FROM files AS f NATURAL JOIN files_peers AS f_p
+							WHERE f_p.session_id=?
+							AND f.file_md5 IN
+								(SELECT file_md5
+									FROM files_peers
+									GROUP BY(file_md5)
+									HAVING COUNT(file_md5) = 1)) """, (session_id,))
+	deleted = c.execute('DELETE FROM files_peers WHERE session_id=?', (session_id,)).rowcount
+
+	return deleted

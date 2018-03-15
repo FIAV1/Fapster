@@ -113,3 +113,6 @@ serverV3.py
 .DS_Store
 
 requests.txt
+
+# pep8
+setup.cfg

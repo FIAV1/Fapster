@@ -20,7 +20,7 @@ class Peer:
         """
         conn.execute('INSERT INTO peers VALUES (?,?,?)', (self.session_id, self.ip, self.port))
 
-    def delete(self, conn: database.sqlite3.Connection) -> int:
+    def delete(self, conn: database.sqlite3.Connection) -> None:
         """ Delete a peer from db
 
         Parameters:
@@ -28,6 +28,4 @@ class Peer:
         Returns:
             int - number of file deleted, owned by the peer
         """
-        deleted = conn.execute('DELETE FROM peers WHERE session_id = ?', (self.session_id,)).rowcount
-
-        return deleted
+        conn.execute('DELETE FROM peers WHERE session_id = ?', (self.session_id,))
