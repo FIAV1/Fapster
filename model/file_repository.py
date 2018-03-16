@@ -81,49 +81,6 @@ def get_copies(conn: database.sqlite3.Connection, file_md5: str) -> str:
 	return num
 
 
-def search(conn: database.sqlite3.Connection, query: str) -> str:
-	""" Search the files with given string on the name
-
-	Parameters:
-		conn - the db connection
-		query - keyword for the search
-
-	Returns:
-		file list - the list of corresponding files
-	"""
-
-	c = conn.cursor()
-	c.execute('SELECT COUNT(file_md5) AS num FROM files WHERE file_name LIKE "%?%"', (query,))
-	row = c.fetchone()
-
-	if row is None:
-		return None
-
-	result = row['num']
-
-	c.execute('SELECT file_md5, file_name FROM files WHERE file_name LIKE "%?%"', (query,))
-	files = c.fetchall()
-
-	if files is None:
-		return None
-
-	for file in files:
-		file_md5 = file['file_md5']
-		file_name = file['file_name']
-		result = result + file_md5 + file_name + get_copies(conn, file_md5)
-		c.execute('SELECT peers.ip, peers.port FROM files_peers JOIN peers ON files_peers.session_id = peers.session_id WHERE files_peers.file_md5 = ?', (file_md5,))
-		peers = c.fetchall()
-
-		if peers is None:
-			return None
-		for peer in peers:
-			peer_ip = peer['peers.ip']
-			peer_port = peer['peers.port']
-			result = result + peer_ip + peer_port
-
-	return result
-
-
 def delete_peer_files(conn: database.sqlite3.Connection, session_id: str) -> int:
 	""" Count all file that will be deleted by deleting the user
 
