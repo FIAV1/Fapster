@@ -18,6 +18,6 @@ if __name__ == '__main__':
 	if not database.exist(DB_FILE):
 		database.create_database(DB_FILE)
 	else:
-		database.reset_database(DB_FILE)
+		database.fill_seeds(DB_FILE)
 
 	Server(3000).run()

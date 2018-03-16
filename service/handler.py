@@ -82,7 +82,7 @@ def serve(request: bytes) -> str:
 			print(f'Error: {e}')
 			return "The server has encountered an error while trying to serve the request."
 
-		return "AADD" + str(num_copies)
+		return "AADD" + str(num_copies).zfill(3)
 
 	elif command == "DELF":
 		if request.__len__() != 52:
@@ -95,9 +95,15 @@ def serve(request: bytes) -> str:
 		conn.row_factory = database.sqlite3.Row
 
 		try:
+			peer = peer_repository.find(conn, session_id)
+
+			if peer is None:
+				conn.close()
+				return "Unauthorized: your SessionID is invalid"
+
 			if not file_repository.peer_has_file(conn, session_id, md5):
 				conn.close()
-				return "File not found"
+				return "ADEL999"
 
 			if not peer_repository.file_unlink(conn, session_id, md5):
 				conn.close()
@@ -118,19 +124,64 @@ def serve(request: bytes) -> str:
 			print(f'Error: {e}')
 			return "The server has encountered an error while trying to serve the request."
 
-		return "ADEL" + str(copy)
+		return "ADEL" + str(copy).zfill(3)
 
 	elif command == "FIND":
-		if request.__len__() != 42:
+		if request.__len__() != 40:
 			return "Invalid command. Usage is: FIND.<your_session_id>.<query_string>"
 
-		session_id = request[5:21].decode('UTF-8')
-		query = request[22:42].decode('UTF-8')
+		session_id = request[4:20].decode('UTF-8')
+		query = request[20:40].decode('UTF-8')
+
+		if query.strip() == '*':
+			query = '*'
+		else:
+			query = '%' + query.rstrip() + '%'
 
 		conn = database.get_connection(db_file)
-		conn.close()
+		conn.row_factory = database.sqlite3.Row
 
-		return "This is the response for FIND"
+		try:
+			peer = peer_repository.find(conn, session_id)
+
+			if peer is None:
+				conn.close()
+				return "Unauthorized: your SessionID is invalid"
+
+			total_file = file_repository.get_files_count_by_querystring(conn, query)
+			if total_file == 0:
+				return 'AFIN' + str(total_file).zfill(3)
+
+			#result = 'File totali trovati: ' + str(total_file) + '\n'
+			result = str(total_file).zfill(3)
+
+			file_list = file_repository.get_files_with_copy_amount_by_querystring(conn, query)
+
+			for file_row in file_list:
+				file_md5 = file_row['file_md5']
+				file_name = file_row['file_name']
+				copies = file_row['copies']
+				#result = result + 'File: {' + file_md5 + ' ' + file_name + ' copie:' + copies + '\n'
+				result = result + file_md5 + file_name + str(copies).zfill(3)
+
+				peer_list = peer_repository.get_peers_by_file(conn, file_md5)
+
+				for peer_row in peer_list:
+					peer_ip = peer_row['ip']
+					peer_port = peer_row['port']
+					#result = result + '{' + peer_ip + ' ' + peer_port + '}' + '\n'
+					result = result + peer_ip + peer_port
+
+			conn.commit()
+			conn.close()
+
+		except database.Error as e:
+			conn.rollback()
+			conn.close()
+			print(f'Error: {e}')
+			return "The server has encountered an error while trying to serve the request."
+
+		return "AFIN" + result
 
 	elif command == "DREG":
 		if request.__len__() != 52:
@@ -143,11 +194,16 @@ def serve(request: bytes) -> str:
 		conn.row_factory = database.sqlite3.Row
 
 		try:
-			if not file_repository.peer_has_file(conn, session_id, md5):
+			peer = peer_repository.find(conn, session_id)
+
+			if peer is None:
 				conn.close()
-				return "File not found"
+				return "Unauthorized: your SessionID is invalid"
 
 			file = file_repository.find(conn, md5)
+
+			if file is None:
+				return "File not found."
 
 			file.download_count += 1
 			file.update(conn)
@@ -161,7 +217,7 @@ def serve(request: bytes) -> str:
 			print(f'Error: {e}')
 			return "The server has encountered an error while trying to serve the request."
 
-		return "ADRE" + str(file.download_count)
+		return "ADRE" + str(file.download_count).zfill(5)
 
 	elif command == "LOGO":
 		if request.__len__() != 20:
@@ -176,7 +232,7 @@ def serve(request: bytes) -> str:
 
 			if peer is None:
 				conn.close()
-				return "Peer not found"
+				return "Unauthorized: your SessionID is invalid"
 
 			deleted = file_repository.delete_peer_files(conn, session_id)
 
@@ -191,7 +247,7 @@ def serve(request: bytes) -> str:
 			print(f'Error: {e}')
 			return "The server has encountered an error while trying to serve the request."
 
-		return "ALGO" + str(deleted)
+		return "ALGO" + str(deleted).zfill(3)
 
 	else:
 		return "Command \'" + request.decode('UTF-8') + "\' is invalid, try again."
