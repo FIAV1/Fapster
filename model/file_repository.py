@@ -106,3 +106,65 @@ def delete_peer_files(conn: database.sqlite3.Connection, session_id: str) -> int
 	deleted = c.execute('DELETE FROM files_peers WHERE session_id=?', (session_id,)).rowcount
 
 	return deleted
+
+
+def get_files_count_by_querystring(conn: database.sqlite3.Connection, query: str) -> int:
+	""" Retrieve the number of files that match the query string
+		Parameters:
+			conn - the db connection
+			query - keyword for the search
+		Returns:
+			int - the file amount
+	"""
+
+	c = conn.cursor()
+
+	if query == '*':
+		c.execute(
+			'SELECT COUNT(file_md5) AS num '
+			'FROM files'
+		)
+	else:
+		c.execute(
+			'SELECT COUNT(file_md5) AS num '
+			'FROM files '
+			'WHERE file_name LIKE ?',
+			(query,)
+		)
+
+	row = c.fetchone()
+
+	if row is None:
+		return 0
+
+	return row['num']
+
+
+def get_files_with_copy_amount_by_querystring(conn: database.sqlite3.Connection, query: str) -> list:
+	""" Retrieve the files matching the query string, with their copy amount
+		Parameters:
+			conn - the db connection
+			query - keyword for the search
+		Returns:
+			file list - the list of corresponding files
+	"""
+	c = conn.cursor()
+
+	if query == '*':
+		c.execute(
+			'SELECT f.file_md5, f.file_name, COUNT(f_p.file_md5) AS copies '
+			'FROM files AS f NATURAL JOIN files_peers AS f_p '		
+			'GROUP BY f_p.file_md5',
+		)
+	else:
+		c.execute(
+			'SELECT f.file_md5, f.file_name, COUNT(f_p.file_md5) AS copies '
+			'FROM files AS f NATURAL JOIN files_peers AS f_p '
+			'WHERE f.file_name LIKE ? '
+			'GROUP BY f_p.file_md5',
+			(query,)
+		)
+
+	file_rows = c.fetchall()
+
+	return file_rows

@@ -99,7 +99,6 @@ def fill_seeds(db_filename: str) -> bool:
 	try:
 		conn.executescript(reset_script.read())
 		conn.executescript(seeds_script.read())
-		print('Eseguo')
 		# commits the statement
 		conn.commit()
 		# close the database

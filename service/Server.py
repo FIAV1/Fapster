@@ -32,7 +32,6 @@ class Server:
 			if response[0:4] == "ALGO":
 				shell.print_red(f'Client {client} [{client_port}] said goodbye! {response[4:]} files deleted.')
 				break
-
 		os._exit(0)
 
 	def __create_socket(self):

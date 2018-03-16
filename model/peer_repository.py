@@ -46,3 +46,24 @@ def file_unlink(conn: database.sqlite3.Connection, session_id: str, file_md5: st
 		return False
 
 	return True
+
+
+def get_peers_by_file(conn: database.sqlite3.Connection, file_md5: str) -> list:
+	""" Retrieve peers that have the given file
+		Parameters:
+			conn - the db connection
+			query - keyword for the search
+		Returns:
+			peers list - the list of corresponding peers
+	"""
+	c = conn.cursor()
+
+	c.execute(
+		'SELECT p.ip, p.port '
+		'FROM peers AS p NATURAL JOIN files_peers AS f_p '
+		'WHERE f_p.file_md5 = ?',
+		(file_md5,)
+	)
+	peer_rows = c.fetchall()
+
+	return peer_rows
