@@ -103,16 +103,18 @@ ENV/
 # vscode
 .vscode
 
-# database
-*.db
-
 # pycharm
 .idea
+
+# debug files
+client.py
 serverV2.py
 serverV3.py
-.DS_Store
-
 requests.txt
+database/seeds.sql
+*.db
+
+.DS_Store
 
 # pep8
 setup.cfg

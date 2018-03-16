@@ -2,11 +2,10 @@
 
 from database import database
 from .Peer import Peer
-from .File import File
 
 
 def find(conn: database.sqlite3.Connection, session_id: str) -> 'Peer':
-	""" Retrive first peer from database
+	""" Retrieve the peer with the given session_id
 
 	Parameters:
 		conn - the db connection
@@ -28,7 +27,7 @@ def find(conn: database.sqlite3.Connection, session_id: str) -> 'Peer':
 
 
 def file_unlink(conn: database.sqlite3.Connection, session_id: str, file_md5: str) -> bool:
-	""" Unlink the Peer from the file
+	""" Unlink the peer with the given session_id from the file
 
 	Parameters:
 		conn - the db connection
@@ -40,16 +39,11 @@ def file_unlink(conn: database.sqlite3.Connection, session_id: str, file_md5: st
 	"""
 
 	c = conn.cursor()
-	row = c.execute('DELETE FROM files_peers WHERE file_md5=? AND session_id=?', (file_md5, session_id,)).rowcount
-
-	if row <= 0:
-		return False
-
-	return True
+	c.execute('DELETE FROM files_peers WHERE file_md5 = ? AND session_id = ?', (file_md5, session_id,))
 
 
 def get_peers_by_file(conn: database.sqlite3.Connection, file_md5: str) -> list:
-	""" Retrieve peers that have the given file
+	""" Retrieve all the peers that have the given file
 		Parameters:
 			conn - the db connection
 			query - keyword for the search

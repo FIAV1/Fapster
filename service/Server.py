@@ -15,7 +15,7 @@ class Server:
 		self.ss = None
 		self.BUFF_SIZE = 200
 
-	def __child(self, sd, clientaddr):
+	def child(self, sd, clientaddr):
 		(client, client_port) = socket.getnameinfo(clientaddr, socket.NI_NUMERICHOST)
 		shell.print_blue(f'Client {client} [{client_port}] on board!')
 		self.ss.close()
@@ -47,6 +47,7 @@ class Server:
 			# without waiting for its natural timeout to expire.
 			# This is because sockets in a TIME_WAIT state can’t be immediately reused.
 			self.ss.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			self.ss.setsockopt(41, socket.IPV6_V6ONLY, 0)
 
 			# Bind the local address (sockaddr) to the socket (ss)
 			self.ss.bind(('', self.port))
@@ -66,7 +67,7 @@ class Server:
 			# Put the passive socket on hold for connection requests
 			(sd, clientaddr) = self.ss.accept()
 
-			p = multiprocessing.Process(target=self.__child, args=(sd, clientaddr,))
+			p = multiprocessing.Process(target=self.child, args=(sd, clientaddr,))
 			p.daemon = True
 			p.start()
 

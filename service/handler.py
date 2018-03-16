@@ -48,7 +48,7 @@ def serve(request: bytes) -> str:
 
 		session_id = request[4:20].decode('UTF-8')
 		md5 = request[20:52].decode('UTF-8')
-		name = request[52:152].decode('UTF-8')
+		name = request[52:152].decode('UTF-8').lower()
 
 		conn = database.get_connection(db_file)
 		conn.row_factory = database.sqlite3.Row
@@ -105,9 +105,7 @@ def serve(request: bytes) -> str:
 				conn.close()
 				return "ADEL999"
 
-			if not peer_repository.file_unlink(conn, session_id, md5):
-				conn.close()
-				return "The server has encountered an error while trying to serve the request."
+			peer_repository.file_unlink(conn, session_id, md5)
 
 			copy = file_repository.get_copies(conn, md5)
 
@@ -131,12 +129,10 @@ def serve(request: bytes) -> str:
 			return "Invalid command. Usage is: FIND.<your_session_id>.<query_string>"
 
 		session_id = request[4:20].decode('UTF-8')
-		query = request[20:40].decode('UTF-8')
+		query = request[20:40].decode('UTF-8').lower().lstrip().rstrip()
 
-		if query.strip() == '*':
-			query = '*'
-		else:
-			query = '%' + query.rstrip() + '%'
+		if query != '*':
+			query = '%' + query + '%'
 
 		conn = database.get_connection(db_file)
 		conn.row_factory = database.sqlite3.Row

@@ -5,7 +5,7 @@ from .File import File
 
 
 def add_owner(conn: database.sqlite3.Connection, file_md5: str, peer_session_id: str) -> None:
-	""" Add a file owner into the pivot table
+	""" Add the peer with the given session_id as file owner into the pivot table
 
 	Parameters:
 		conn - the db connection
@@ -25,7 +25,7 @@ def find(conn: database.sqlite3.Connection, file_md5: str) -> 'File':
 		file_md5 - the md5 of the file
 
 	Returns:
-		file - the file found
+		file - the istance of the founded file
 	"""
 	c = conn.cursor()
 	c.execute('SELECT * FROM files WHERE file_md5 = ?', (file_md5,))
@@ -40,17 +40,18 @@ def find(conn: database.sqlite3.Connection, file_md5: str) -> 'File':
 
 
 def peer_has_file(conn: database.sqlite3.Connection, session_id: str, file_md5: str) -> bool:
-	""" Retrieve the file with the given md5 from database
+	""" Check if the peer with the given session_id actually own the file with the given md5
 
 	Parameters:
 		conn - the db connection
+		session_id - the session_id of the peer
 		file_md5 - the md5 of the file
 
 	Returns:
-		file - the file found
+		bool - True/False either the peer own the file or not
 	"""
 	c = conn.cursor()
-	c.execute('SELECT * FROM files_peers WHERE file_md5=:md5 AND session_id=:id', {'md5': file_md5, 'id': session_id})
+	c.execute('SELECT * FROM files_peers WHERE file_md5= ? AND session_id= ?', (file_md5, session_id))
 	row = c.fetchone()
 
 	if row is None:
@@ -59,7 +60,7 @@ def peer_has_file(conn: database.sqlite3.Connection, session_id: str, file_md5: 
 	return True
 
 
-def get_copies(conn: database.sqlite3.Connection, file_md5: str) -> str:
+def get_copies(conn: database.sqlite3.Connection, file_md5: str) -> int:
 	""" Retrieve the copies amount of the given file
 
 	Parameters:
@@ -82,55 +83,51 @@ def get_copies(conn: database.sqlite3.Connection, file_md5: str) -> str:
 
 
 def delete_peer_files(conn: database.sqlite3.Connection, session_id: str) -> int:
-	""" Count all file that will be deleted by deleting the user
+	""" Remove all the files owned by the given peer from the directory and return the amount of files deleted
 
 	Parameters:
 		conn - the db connection
-		session_id - session id for a peer
+		session_id - the session_id of the peer
 
 	Returns:
-		int - amount of deleted files
+		int - the amount of deleted files
 	"""
 	c = conn.cursor()
 	c.execute('PRAGMA foreign_keys=ON')
-	c.execute(""" DELETE FROM files
-					WHERE file_md5 IN
-						(SELECT f.file_md5
-							FROM files AS f NATURAL JOIN files_peers AS f_p
-							WHERE f_p.session_id=?
-							AND f.file_md5 IN
-								(SELECT file_md5
-									FROM files_peers
-									GROUP BY(file_md5)
-									HAVING COUNT(file_md5) = 1)) """, (session_id,))
-	deleted = c.execute('DELETE FROM files_peers WHERE session_id=?', (session_id,)).rowcount
+	deleted = c.execute(
+		'DELETE FROM files '
+		'WHERE file_md5 IN '
+		'	(SELECT f.file_md5 '
+		'	FROM files AS f NATURAL JOIN files_peers AS f_p '
+		'	WHERE f_p.session_id=? AND f.file_md5 IN '
+		'		(SELECT file_md5 '
+		'		FROM files_peers '
+		'		GROUP BY(file_md5) '
+		'		HAVING COUNT(file_md5) = 1)); '
+		'DELETE FROM files_peers WHERE session_id=?;',
+		(session_id,)
+	).rowcount
+	deleted += c.execute('DELETE FROM files_peers WHERE session_id=?', (session_id,)).rowcount
 
 	return deleted
 
 
 def get_files_count_by_querystring(conn: database.sqlite3.Connection, query: str) -> int:
-	""" Retrieve the number of files that match the query string
-		Parameters:
-			conn - the db connection
-			query - keyword for the search
-		Returns:
-			int - the file amount
+	""" Retrieve the number of files whose name match with the query string
+
+	Parameters:
+		conn - the db connection
+		query - the keyword for the search
+	Returns:
+		int - the file amount
 	"""
 
 	c = conn.cursor()
 
 	if query == '*':
-		c.execute(
-			'SELECT COUNT(file_md5) AS num '
-			'FROM files'
-		)
+		c.execute('SELECT COUNT(file_md5) AS num FROM files')
 	else:
-		c.execute(
-			'SELECT COUNT(file_md5) AS num '
-			'FROM files '
-			'WHERE file_name LIKE ?',
-			(query,)
-		)
+		c.execute('SELECT COUNT(file_md5) AS num FROM files WHERE file_name LIKE ?', (query,))
 
 	row = c.fetchone()
 
@@ -141,12 +138,13 @@ def get_files_count_by_querystring(conn: database.sqlite3.Connection, query: str
 
 
 def get_files_with_copy_amount_by_querystring(conn: database.sqlite3.Connection, query: str) -> list:
-	""" Retrieve the files matching the query string, with their copy amount
-		Parameters:
-			conn - the db connection
-			query - keyword for the search
-		Returns:
-			file list - the list of corresponding files
+	""" Retrieve the files whose name match with the query string, with their copies amount
+
+	Parameters:
+		conn - the db connection
+		query - keyword for the search
+	Returns:
+		file list - the list of corresponding files
 	"""
 	c = conn.cursor()
 

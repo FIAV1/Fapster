@@ -3,8 +3,6 @@
 import socket
 import sys
 
-import os
-
 server = input('Server: ')
 
 while True:
