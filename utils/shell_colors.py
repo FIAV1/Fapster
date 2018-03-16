@@ -10,17 +10,17 @@ YELLOW = '\033[93m'
 RED = '\033[91m'
 
 
-def print_red(string, terminator='\n'):
-    print(DEFAULTBG + BOLD + RED + string + RESET, end=terminator)
+def print_red(string, end='\n'):
+    print(DEFAULTBG + BOLD + RED + string + RESET, end=end)
 
 
-def print_blue(string, terminator='\n'):
-    print(DEFAULTBG + BOLD + BLUE + string + RESET, end=terminator)
+def print_blue(string, end='\n'):
+    print(DEFAULTBG + BOLD + BLUE + string + RESET, end=end)
 
 
-def print_green(string, terminator='\n'):
-    print(DEFAULTBG + BOLD + GREEN + string + RESET, end=terminator)
+def print_green(string, end='\n'):
+    print(DEFAULTBG + BOLD + GREEN + string + RESET, end=end)
 
 
-def print_yellow(string, terminator='\n'):
-    print(DEFAULTBG + BOLD + YELLOW + string + RESET, end=terminator)
+def print_yellow(string, end='\n'):
+    print(DEFAULTBG + BOLD + YELLOW + string + RESET, end=end)

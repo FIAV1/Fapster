@@ -21,11 +21,13 @@ class Server:
 		self.ss.close()
 		while True:
 			request = sd.recv(self.BUFF_SIZE)
-			shell.print_green(f'{client} -> ', terminator='')
-			print(f'{request.decode()}')
+			shell.print_green(f'{client} -> ', end='')
+			print(f'{request.decode()}', end='')
 
 			response = handler.serve(request)
 			sd.sendall((bytes(response, 'UTF-8')))
+			shell.print_red(' -> ', end='')
+			print(f'{response}')
 
 			if response[0:4] == "ALGO":
 				shell.print_red(f'Client {client} [{client_port}] said goodbye! {response[4:]} files deleted.')
