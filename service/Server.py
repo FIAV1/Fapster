@@ -5,6 +5,7 @@ import sys
 import os
 import multiprocessing
 from . import handler
+from utils import shell_colors as shell
 
 
 class Server:
@@ -16,15 +17,18 @@ class Server:
 
 	def __child(self, sd, clientaddr):
 		(client, client_port) = socket.getnameinfo(clientaddr, socket.NI_NUMERICHOST)
-		print(f'Client {client} on port {client_port}. Child PID: {os.getpid()}\n')
+		shell.print_blue(f'Client {client} [{client_port}] on board!')
 		self.ss.close()
 		while True:
 			request = sd.recv(self.BUFF_SIZE)
+			shell.print_green(f'{client} -> ', terminator='')
+			print(f'{request.decode()}')
+
 			response = handler.serve(request)
 			sd.sendall((bytes(response, 'UTF-8')))
 
 			if response[0:4] == "ALGO":
-				print(f'Client {client} on port {client_port} with PID: {os.getpid()} closed the connection.\n{response[4:]} files deleted.\n')
+				shell.print_red(f'Client {client} [{client_port}] said goodbye! {response[4:]} files deleted.')
 				break
 
 		os._exit(0)
