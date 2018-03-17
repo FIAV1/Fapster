@@ -11,21 +11,21 @@ class Peer:
         self.port = port
 
     def insert(self, conn: database.sqlite3.Connection) -> None:
-        """ Insert a peer into db
+        """ Insert the peer into the db
 
         Parameters:
             conn - the db connection
         Returns:
-            bool - true or false either if it succeed or it fails
+            None
         """
         conn.execute('INSERT INTO peers VALUES (?,?,?)', (self.session_id, self.ip, self.port))
 
     def delete(self, conn: database.sqlite3.Connection) -> None:
-        """ Delete a peer from db
+        """ Delete the peer from the db
 
         Parameters:
             conn - the db connection
         Returns:
-            int - number of file deleted, owned by the peer
+            None
         """
         conn.execute('DELETE FROM peers WHERE session_id = ?', (self.session_id,))

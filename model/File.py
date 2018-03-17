@@ -11,7 +11,7 @@ class File:
 		self.download_count = download_count
 
 	def insert(self, conn: database.sqlite3.Connection) -> None:
-		""" Insert a file into db
+		""" Insert the file into the db
 
 		Parameters:
 			conn - the db connection
@@ -21,7 +21,7 @@ class File:
 		conn.execute('INSERT INTO files VALUES (?,?,?)', (self.file_md5, self.file_name, self.download_count))
 
 	def update(self, conn: database.sqlite3.Connection) -> None:
-		""" Delete a peer from db
+		""" Update the file into the db
 
 		Parameters:
 			conn - the db connection
@@ -35,7 +35,7 @@ class File:
 		conn.execute(query, {'md5': self.file_md5, 'name': self.file_name, 'count': self.download_count})
 
 	def delete(self, conn: database.sqlite3.Connection) -> None:
-		""" Remove a file from the db
+		""" Remove the file from the db
 
 		Parameters:
 			conn - the db connection
