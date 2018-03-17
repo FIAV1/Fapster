@@ -1,4 +1,4 @@
-# Fapster :warning: WIP :warning:
+# Fapster
 
 :books: Reti Peer To Peer - Università degli Studi di Ferrara :books:
 
@@ -30,10 +30,12 @@ A peer-to-peer server based on the Napster's approach:
 ```shell
 python3 fapster_server.py
 ```
-**_Note:_** Python 3.6.x is required
+**_Note:_** Python 3.6.x or above is required
 
-The server is now listening on port 3000. 
-Once a client begins the communication, the server will keep the connection open for further commands until the logout command is received.
+The server is now listening on port 3000.
+
+Once a peer begins the communication, **the directory server _won't_ keep the connection open for further requests**, so keep in mind: 
+* 1 request = 1 connection
 
 ### Client's supported commands:
 
@@ -72,8 +74,8 @@ ADRE[4B].\#download[5B]
 ```
 
 ## To-Do
-- [ ] Server implementation
-- [ ] Client implementation
+- [x] Directory Server implementation
+- [ ] Peer implementation
 
 ## Authors :rocket:
 * [Federico Frigo](https://github.com/xBlue0)
