@@ -99,3 +99,22 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# vscode
+.vscode
+
+# pycharm
+.idea
+
+# debug files
+client.py
+serverV2.py
+serverV3.py
+requests.txt
+database/seeds.sql
+*.db
+
+.DS_Store
+
+# pep8
+setup.cfg
