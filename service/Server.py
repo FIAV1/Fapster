@@ -17,21 +17,21 @@ class Server:
 
 	def child(self, sd, clientaddr):
 		(client, client_port) = socket.getnameinfo(clientaddr, socket.NI_NUMERICHOST)
-		shell.print_blue(f'Client {client} [{client_port}] on board!')
 		self.ss.close()
-		while True:
-			request = sd.recv(self.BUFF_SIZE)
-			shell.print_green(f'{client} -> ', end='')
-			print(f'{request.decode()}', end='')
 
-			response = handler.serve(request)
-			sd.sendall((bytes(response, 'UTF-8')))
-			shell.print_red(' -> ', end='')
-			print(f'{response}')
+		request = sd.recv(self.BUFF_SIZE)
+		shell.print_green(f'{client} [{client_port}] -> ', end='')
+		print(f'{request.decode()}', end='')
 
-			if response[0:4] == "ALGO":
-				shell.print_red(f'Client {client} [{client_port}] said goodbye! {response[4:]} files deleted.')
-				break
+		response = handler.serve(request)
+		sd.sendall((bytes(response, 'UTF-8')))
+		shell.print_red(' -> ', end='')
+		print(f'{response}')
+
+		if response[0:4] == "ALGO":
+			shell.print_blue(f'Client {client} [{client_port}] said goodbye! {int(response[4:])} files deleted.')
+
+		sd.close()
 		os._exit(0)
 
 	def __create_socket(self):

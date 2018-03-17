@@ -103,8 +103,7 @@ def delete_peer_files(conn: database.sqlite3.Connection, session_id: str) -> int
 		'		(SELECT file_md5 '
 		'		FROM files_peers '
 		'		GROUP BY(file_md5) '
-		'		HAVING COUNT(file_md5) = 1)); '
-		'DELETE FROM files_peers WHERE session_id=?;',
+		'		HAVING COUNT(file_md5) = 1)) ',
 		(session_id,)
 	).rowcount
 	deleted += c.execute('DELETE FROM files_peers WHERE session_id=?', (session_id,)).rowcount

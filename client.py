@@ -4,35 +4,30 @@ import socket
 import sys
 
 server = input('Server: ')
+version = int(input('Version: '))
 
 while True:
-	version = int(input('Version: '))
+
+	data = input('Messaggio: ')
+
 	if version == 4:
 		sd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		break
-	if version == 6:
+	elif version == 6:
 		sd = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-		break
 	else:
 		print('Puoi scegliere solo 4 o 6')
-		continue
+		break
 
-try:
-	sd.connect((server, 3000))
-except OSError as e:
-	print(f'Errore sulla connect: {e}')
-	sys.exit(0)
+	try:
+		sd.connect((server, 3000))
+		print('Connessione avvenuta\n')
+	except OSError as e:
+		print(f'Errore sulla socket: {e}')
+		sys.exit(0)
 
-with sd:
-	print('Connessione avvenuta\n')
-
-	while True:
-		data = input('Messaggio: ')
+	with sd:
 		sd.sendall(bytes(data, 'UTF-8'))
 		data = sd.recv(1024)
 		response = data.decode('UTF-8')
 		print(f'Ricevuto: {data}')
-
-		if response[0:4] == "ALGO":
-			print(f'Connection closed.\n{response[4:]} files deleted.\n')
-			exit(0)
+		sd.close()
