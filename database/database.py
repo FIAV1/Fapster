@@ -2,6 +2,7 @@
 
 import sqlite3
 from sqlite3 import Error
+from sqlite3 import DatabaseError
 import os.path
 
 
@@ -122,6 +123,6 @@ def get_connection(db_filename: str) -> sqlite3.Connection:
 	"""
 	try:
 		return sqlite3.connect(db_filename)
+
 	except Error as e:
-		print(e)
-		exit(0)
+		raise e

@@ -21,28 +21,49 @@ def serve(request: bytes) -> str:
 	command = request[0:4].decode('UTF-8')
 
 	if command == "LOGI":
+
 		if request.__len__() != 64:
-			return "Invalid request. Usage is: LOGI.<your_ip>.<your_port>"
+			return "0" * 16
 
 		ip = request[4:59].decode('UTF-8')
 		port = request[59:64].decode('UTF-8')
-		peer = Peer(str(uuid.uuid4().hex[:16].upper()), ip, port)
-		conn = database.get_connection(db_file)
 
 		try:
-			peer.insert(conn)
+			conn = database.get_connection(db_file)
+			conn.row_factory = database.sqlite3.Row
+
+		except database.Error as e:
+			print(f'Error: {e}')
+			return "0" * 16
+
+		try:
+			peer = peer_repository.findByIp(conn, ip)
+
+			# if the peer didn't already logged in
+			if peer is None:
+				session_id = str(uuid.uuid4().hex[:16].upper())
+				peer = peer_repository.find(conn, session_id)
+
+				# while the generated session_id exists
+				while peer is not None:
+					session_id = str(uuid.uuid4().hex[:16].upper())
+					peer = peer_repository.find(conn, session_id)
+
+				peer = Peer(session_id, ip, port)
+				peer.insert(conn)
+
 			conn.commit()
 			conn.close()
 
 		except database.Error as e:
-			conn.rollback()
 			conn.close()
 			print(f'Error: {e}')
-			return "The server has encountered an error while trying to serve the request."
+			return "0" * 16
 
 		return "ALGI" + peer.session_id
 
 	elif command == "ADDF":
+
 		if request.__len__() != 152:
 			return "Invalid request. Usage is: ADDF.<your_session_id>.<file_md5>.<filename>"
 
@@ -50,8 +71,13 @@ def serve(request: bytes) -> str:
 		md5 = request[20:52].decode('UTF-8')
 		name = request[52:152].decode('UTF-8').lower()
 
-		conn = database.get_connection(db_file)
-		conn.row_factory = database.sqlite3.Row
+		try:
+			conn = database.get_connection(db_file)
+			conn.row_factory = database.sqlite3.Row
+
+		except database.Error as e:
+			print(f'Error: {e}')
+			return "The server has encountered an error while trying to serve the request."
 
 		try:
 			peer = peer_repository.find(conn, session_id)
@@ -76,6 +102,7 @@ def serve(request: bytes) -> str:
 
 			conn.commit()
 			conn.close()
+
 		except database.Error as e:
 			conn.rollback()
 			conn.close()
@@ -85,14 +112,20 @@ def serve(request: bytes) -> str:
 		return "AADD" + str(num_copies).zfill(3)
 
 	elif command == "DELF":
+
 		if request.__len__() != 52:
 			return "Invalid request. Usage is: DELF.<your_session_id>.<file_md5>"
 
 		session_id = request[4:20].decode('UTF-8')
 		md5 = request[20:52].decode('UTF-8')
 
-		conn = database.get_connection(db_file)
-		conn.row_factory = database.sqlite3.Row
+		try:
+			conn = database.get_connection(db_file)
+			conn.row_factory = database.sqlite3.Row
+
+		except database.Error as e:
+			print(f'Error: {e}')
+			return "The server has encountered an error while trying to serve the request."
 
 		try:
 			peer = peer_repository.find(conn, session_id)
@@ -125,6 +158,7 @@ def serve(request: bytes) -> str:
 		return "ADEL" + str(copy).zfill(3)
 
 	elif command == "FIND":
+
 		if request.__len__() != 40:
 			return "Invalid command. Usage is: FIND.<your_session_id>.<query_string>"
 
@@ -134,8 +168,13 @@ def serve(request: bytes) -> str:
 		if query != '*':
 			query = '%' + query + '%'
 
-		conn = database.get_connection(db_file)
-		conn.row_factory = database.sqlite3.Row
+		try:
+			conn = database.get_connection(db_file)
+			conn.row_factory = database.sqlite3.Row
+
+		except database.Error as e:
+			print(f'Error: {e}')
+			return "The server has encountered an error while trying to serve the request."
 
 		try:
 			peer = peer_repository.find(conn, session_id)
@@ -180,14 +219,20 @@ def serve(request: bytes) -> str:
 		return "AFIN" + result
 
 	elif command == "DREG":
+
 		if request.__len__() != 52:
 			return "Invalid request. Usage is: DREG.<your_session_id>.<file_md5>"
 
 		session_id = request[4:20].decode('UTF-8')
 		md5 = request[20:52].decode('UTF-8')
 
-		conn = database.get_connection(db_file)
-		conn.row_factory = database.sqlite3.Row
+		try:
+			conn = database.get_connection(db_file)
+			conn.row_factory = database.sqlite3.Row
+
+		except database.Error as e:
+			print(f'Error: {e}')
+			return "The server has encountered an error while trying to serve the request."
 
 		try:
 			peer = peer_repository.find(conn, session_id)
@@ -216,12 +261,19 @@ def serve(request: bytes) -> str:
 		return "ADRE" + str(file.download_count).zfill(5)
 
 	elif command == "LOGO":
+
 		if request.__len__() != 20:
 			return "Invalid request. Usage is: LOGO.<your_session_id>"
 
 		session_id = request[4:20].decode('UTF-8')
-		conn = database.get_connection(db_file)
-		conn.row_factory = database.sqlite3.Row
+
+		try:
+			conn = database.get_connection(db_file)
+			conn.row_factory = database.sqlite3.Row
+
+		except database.Error as e:
+			print(f'Error: {e}')
+			return "The server has encountered an error while trying to serve the request."
 
 		try:
 			peer = peer_repository.find(conn, session_id)
