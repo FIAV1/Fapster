@@ -24,7 +24,7 @@ class Server:
 		print(f'{request.decode()}', end='')
 
 		response = handler.serve(request)
-		sd.sendall((bytes(response, 'UTF-8')))
+		sd.send(response.encode())
 		shell.print_red(' -> ', end='')
 		print(f'{response}')
 

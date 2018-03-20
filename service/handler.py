@@ -22,7 +22,7 @@ def serve(request: bytes) -> str:
 
 	if command == "LOGI":
 
-		if request.__len__() != 64:
+		if len(request) != 64:
 			return "0" * 16
 
 		ip = request[4:59].decode('UTF-8')
@@ -64,7 +64,7 @@ def serve(request: bytes) -> str:
 
 	elif command == "ADDF":
 
-		if request.__len__() != 152:
+		if len(request) != 152:
 			return "Invalid request. Usage is: ADDF.<your_session_id>.<file_md5>.<filename>"
 
 		session_id = request[4:20].decode('UTF-8')
@@ -113,7 +113,7 @@ def serve(request: bytes) -> str:
 
 	elif command == "DELF":
 
-		if request.__len__() != 52:
+		if len(request) != 52:
 			return "Invalid request. Usage is: DELF.<your_session_id>.<file_md5>"
 
 		session_id = request[4:20].decode('UTF-8')
@@ -159,7 +159,7 @@ def serve(request: bytes) -> str:
 
 	elif command == "FIND":
 
-		if request.__len__() != 40:
+		if len(request) != 40:
 			return "Invalid command. Usage is: FIND.<your_session_id>.<query_string>"
 
 		session_id = request[4:20].decode('UTF-8')
@@ -220,7 +220,7 @@ def serve(request: bytes) -> str:
 
 	elif command == "DREG":
 
-		if request.__len__() != 52:
+		if len(request) != 52:
 			return "Invalid request. Usage is: DREG.<your_session_id>.<file_md5>"
 
 		session_id = request[4:20].decode('UTF-8')
@@ -262,7 +262,7 @@ def serve(request: bytes) -> str:
 
 	elif command == "LOGO":
 
-		if request.__len__() != 20:
+		if len(request) != 20:
 			return "Invalid request. Usage is: LOGO.<your_session_id>"
 
 		session_id = request[4:20].decode('UTF-8')
