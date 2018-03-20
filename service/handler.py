@@ -37,7 +37,7 @@ def serve(request: bytes) -> str:
 			return "0" * 16
 
 		try:
-			peer = peer_repository.findByIp(conn, ip)
+			peer = peer_repository.find_by_ip(conn, ip)
 
 			# if the peer didn't already logged in
 			if peer is None:
@@ -65,7 +65,7 @@ def serve(request: bytes) -> str:
 	elif command == "ADDF":
 
 		if len(request) != 152:
-			return "Invalid request. Usage is: ADDF.<your_session_id>.<file_md5>.<filename>"
+			return "Invalid request. Usage is: ADDF<your_session_id><file_md5><filename>"
 
 		session_id = request[4:20].decode('UTF-8')
 		md5 = request[20:52].decode('UTF-8')
@@ -114,7 +114,7 @@ def serve(request: bytes) -> str:
 	elif command == "DELF":
 
 		if len(request) != 52:
-			return "Invalid request. Usage is: DELF.<your_session_id>.<file_md5>"
+			return "Invalid request. Usage is: DELF<your_session_id><file_md5>"
 
 		session_id = request[4:20].decode('UTF-8')
 		md5 = request[20:52].decode('UTF-8')
@@ -160,7 +160,7 @@ def serve(request: bytes) -> str:
 	elif command == "FIND":
 
 		if len(request) != 40:
-			return "Invalid command. Usage is: FIND.<your_session_id>.<query_string>"
+			return "Invalid command. Usage is: FIND<your_session_id><query_string>"
 
 		session_id = request[4:20].decode('UTF-8')
 		query = request[20:40].decode('UTF-8').lower().lstrip().rstrip()
@@ -187,7 +187,6 @@ def serve(request: bytes) -> str:
 			if total_file == 0:
 				return 'AFIN' + str(total_file).zfill(3)
 
-			#result = 'File totali trovati: ' + str(total_file) + '\n'
 			result = str(total_file).zfill(3)
 
 			file_list = file_repository.get_files_with_copy_amount_by_querystring(conn, query)
@@ -196,7 +195,7 @@ def serve(request: bytes) -> str:
 				file_md5 = file_row['file_md5']
 				file_name = file_row['file_name']
 				copies = file_row['copies']
-				#result = result + 'File: {' + file_md5 + ' ' + file_name + ' copie:' + copies + '\n'
+
 				result = result + file_md5 + file_name + str(copies).zfill(3)
 
 				peer_list = peer_repository.get_peers_by_file(conn, file_md5)
@@ -204,7 +203,7 @@ def serve(request: bytes) -> str:
 				for peer_row in peer_list:
 					peer_ip = peer_row['ip']
 					peer_port = peer_row['port']
-					#result = result + '{' + peer_ip + ' ' + peer_port + '}' + '\n'
+
 					result = result + peer_ip + peer_port
 
 			conn.commit()
@@ -221,7 +220,7 @@ def serve(request: bytes) -> str:
 	elif command == "DREG":
 
 		if len(request) != 52:
-			return "Invalid request. Usage is: DREG.<your_session_id>.<file_md5>"
+			return "Invalid request. Usage is: DREG<your_session_id><file_md5>"
 
 		session_id = request[4:20].decode('UTF-8')
 		md5 = request[20:52].decode('UTF-8')
@@ -263,7 +262,7 @@ def serve(request: bytes) -> str:
 	elif command == "LOGO":
 
 		if len(request) != 20:
-			return "Invalid request. Usage is: LOGO.<your_session_id>"
+			return "Invalid request. Usage is: LOGO<your_session_id>"
 
 		session_id = request[4:20].decode('UTF-8')
 

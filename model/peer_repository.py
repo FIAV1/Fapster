@@ -26,7 +26,7 @@ def find(conn: database.sqlite3.Connection, session_id: str) -> 'Peer':
 	return peer
 
 
-def findByIp(conn: database.sqlite3.Connection, ip: str) -> 'Peer':
+def find_by_ip(conn: database.sqlite3.Connection, ip: str) -> 'Peer':
 	""" Retrieve the peer with the given session_id
 
 	Parameters:
